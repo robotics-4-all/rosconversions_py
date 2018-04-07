@@ -204,6 +204,10 @@ def ros_to_dict(message):
     return dictionary
 
 
+def get_message_class(message_type):
+    return roslib.message.get_message_class(message_type)
+
+
 if __name__ == "__main__":
     from sensor_msgs.msg import Image
     message = Image()
