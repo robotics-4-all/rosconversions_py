@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Highly inspired from: https://github.com/uts-magic-lab/rosduct
+"""
+
 from __future__ import print_function
 
 import roslib.message
