@@ -87,8 +87,12 @@ def _to_ros_time(_type, _value):
 
 def _to_ros_primitive(_type, _value):
     if _type == "string" and isinstance(_value, unicode):
-        #  print(field_name, "string", _value, type(_value))
         _value = _value.encode('utf8')
+    elif _type in ["float32", "float64"]:
+        if _value == None:
+            _value = float('Inf')
+        #  if math.isnan(_value) or math.isinf(_value):
+            #  print("IS Inf or NaN")
     return _value
 
 
@@ -99,12 +103,15 @@ def _convert_to_ros_array(_type, list_value):
 
 def _from_ros_type(_type, _value):
     if _is_ros_binary_type(_type):
+        #  print("Data is ROS binary type")
         _value = _from_ros_binary(_value)
     elif _type in ROS_TIME_TYPES:
         _value = _from_ros_time(_value)
     elif _type in ROS_PRIMITIVE_TYPES:
+        #  print("Data is ROS primitive type")
         _value = _value
     elif _is_type_an_array(_type):
+        #  print("Data is Array")
         _value = _from_ros_array(_type, _value)
     else:
         _value = ros_to_dict(_value)
