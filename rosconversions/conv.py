@@ -51,7 +51,7 @@ def _to_ros_type(_type, _value):
         #  print("Type {0} is array type".format(_type))
         _value = _convert_to_ros_array(_type, _value)
     else:
-        _value = dict_to_ros(_type, _value)
+        _value = dict_to_ros_msg(_type, _value)
     return _value
 
 
@@ -114,7 +114,7 @@ def _from_ros_type(_type, _value):
         #  print("Data is Array")
         _value = _from_ros_array(_type, _value)
     else:
-        _value = ros_to_dict(_value)
+        _value = _ros_to_dict(_value)
     return _value
 
 
@@ -171,7 +171,7 @@ def _is_type_an_array(_type):
     return LIST_BRACKETS.search(_type) is not None
 
 
-def dict_to_ros(message_type, dictionary):
+def _dict_to_ros(message, dictionary):
     """Take in the message type and a Python dictionary and returns
     a ROS message.
 
@@ -184,8 +184,6 @@ def dict_to_ros(message_type, dictionary):
         dict_message = { "data": "Hello, Robot" }
         ros_message = dict_to_ros(message_type, dict_message)
     """
-    message_class = get_message_class(message_type)
-    message = message_class()
     message_fields = dict(_get_message_fields(message))
 
     for field_name, _value in dictionary.items():
@@ -194,12 +192,14 @@ def dict_to_ros(message_type, dictionary):
             _value = _to_ros_type(_type, _value)
             setattr(message, field_name, _value)
         else:
-            err = 'ROS message type "{0}" has no field named "{1}"'\
-                .format(message_type, field_name)
+            err = 'ROS message has no field named "{1}"'\
+                .format(field_name)
+            #  err = 'ROS message type "{0}" has no field named "{1}"'\
+                #  .format(message_type, field_name)
             raise ValueError(err)
     return message
 
-def ros_to_dict(message):
+def _ros_to_dict(message):
     """Take in a ROS message and returns a Python dictionary.
 
     Example:
@@ -212,28 +212,6 @@ def ros_to_dict(message):
         _value = getattr(message, field_name)
         dictionary[field_name] = _from_ros_type(_type, _value)
     return dictionary
-
-def get_message_class(message_type):
-    """Return an instance of given message type.
-
-    Exports roslib.message.get_message_class(message_type) under this module.
-    http://docs.ros.org/diamondback/api/roslib/html/python/roslib.message-module.html
-
-    Args:
-        - message_type: The message type, e.g 'std_msgs/String'
-    """
-    return roslib.message.get_message_class(message_type)
-
-def get_service_class(service_type, reload_on_error=False):
-    """Return an instance of given message type.
-
-    Exports roslib.message.get_message_class(message_type) under this module.
-    http://docs.ros.org/diamondback/api/roslib/html/python/roslib.message-module.html
-
-    Args:
-        - service_type: The service type.
-    """
-    return roslib.message.get_service_class(service_type, reload_on_error=reload_on_error)
 
 def _srv_type_to_instance(service_type, request=False, response=False):
     srv_cls = get_service_class(service_type, reload_on_error=False)
@@ -262,11 +240,48 @@ def _dict_to_ros_srv(service_type, dictionary, request=False, response=False):
             raise ValueError(err)
     return srv_obj
 
+def dict_to_ros_msg(message_type, dictionary):
+    message_class = get_message_class(message_type)
+    message = message_class()
+    return _dict_to_ros(message, dictionary)
+
+def ros_msg_to_dict(message):
+    return _ros_to_dict(message)
+
+def get_message_class(message_type):
+    """Return an instance of given message type.
+
+    Exports roslib.message.get_message_class(message_type) under this module.
+    http://docs.ros.org/diamondback/api/roslib/html/python/roslib.message-module.html
+
+    Args:
+        - message_type: The message type, e.g 'std_msgs/String'
+    """
+    return roslib.message.get_message_class(message_type)
+
+def get_service_class(service_type, reload_on_error=False):
+    """Return an instance of given message type.
+
+    Exports roslib.message.get_message_class(message_type) under this module.
+    http://docs.ros.org/diamondback/api/roslib/html/python/roslib.message-module.html
+
+    Args:
+        - service_type: The service type.
+    """
+    return roslib.message.get_service_class(service_type, reload_on_error=reload_on_error)
+
 def dict_to_ros_srv_response(service_type, dictionary):
     return _dict_to_ros_srv(service_type, dictionary, response=True)
 
 def dict_to_ros_srv_request(service_type, dictionary):
     return _dict_to_ros_srv(service_type, dictionary, request=True)
+
+def ros_srv_req_to_dict(srv_req):
+    return _ros_to_dict(srv_req)
+
+def ros_srv_resp_to_dict(srv_resp):
+    return _ros_to_dict(srv_resp)
+
 
 if __name__ == "__main__":
     srv_req = dict_to_ros_srv_request('std_srvs/Trigger', {})
@@ -274,21 +289,26 @@ if __name__ == "__main__":
     srv_resp = dict_to_ros_srv_response('std_srvs/Trigger',
                                         {'success': True, 'message': 'Do it!'})
     print(srv_resp)
-    #  from sensor_msgs.msg import Image
-    #  message = Image()
+    d = ros_srv_req_to_dict(srv_req)
+    print(d)
+    d = ros_srv_resp_to_dict(srv_resp)
+    print(d)
 
-    #  print("------------------<sensor_msgs/Image>-------------------")
-    #  from PIL import Image
-    #  im = Image.open('Lenna.png')
-    #  width, height = im.size
+    from sensor_msgs.msg import Image
+    message = Image()
 #
-    #  message.height = height
-    #  message.width = width
-    #  message.step = width
-    #  message.data = str(list(im.getdata()))
-#
-    #  print("From sensor_msgs/Image to dict...")
-    #  _dict = ros_to_dict(message)
-    #  print("From dict to sensor_msgs/Image...")
-    #  msg = dict_to_ros("sensor_msgs/Image", _dict)
-    #  print("-------------------------------------------------------")
+    print("------------------<sensor_msgs/Image>-------------------")
+    from PIL import Image
+    im = Image.open('Lenna.png')
+    width, height = im.size
+
+    message.height = height
+    message.width = width
+    message.step = width
+    message.data = str(list(im.getdata()))
+
+    print("From sensor_msgs/Image to dict...")
+    _dict = ros_msg_to_dict(message)
+    print("From dict to sensor_msgs/Image...")
+    msg = dict_to_ros_msg("sensor_msgs/Image", _dict)
+    print("-------------------------------------------------------")
