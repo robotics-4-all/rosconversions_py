@@ -224,11 +224,25 @@ def _srv_type_to_instance(service_type, request=False, response=False):
     return _instance
 
 def dict_to_ros_msg(message_type, dictionary):
+    """Transform a dict object into a ROS Message, given it's type.
+
+    Args:
+        - message_type (str): The ROS Message type.
+        - dictionary (dict): Dictionary to convert to ROS Message
+
+    Example:
+    >> dict_to_ros_msg("std_msgs/String", {})
+    """
     message_class = get_message_class(message_type)
     message = message_class()
     return _dict_to_ros(message, dictionary)
 
 def ros_msg_to_dict(message):
+    """Convert a ROS Message into a dict.
+
+    Args:
+        - message (ROS Message)
+    """
     return _ros_to_dict(message)
 
 def get_message_class(message_type):
@@ -267,6 +281,22 @@ def ros_srv_req_to_dict(srv_req):
 def ros_srv_resp_to_dict(srv_resp):
     return _ros_to_dict(srv_resp)
 
+def fill_ros_message(message, dictionary):
+    """Take in the ROS Message instance and a Python dictionary and fills.
+    Dictionary values are applied to the corresponding ROS Message
+    properties.
+
+    Args:
+        message_type (str): The ROS Message type, e.g. ``std_msgs/String``
+        dictionary (dict): The dictionary to transform to ROS Message
+
+    Example:
+        message_type = "std_msgs/String"
+        dict_message = { "data": "Hello, Robot" }
+        ros_message = dict_to_ros(message_type, dict_message)
+    """
+    return _dict_to_ros(message, dictionary)
+
 
 if __name__ == "__main__":
     srv_req = dict_to_ros_srv_request('std_srvs/Trigger', {})
@@ -296,4 +326,6 @@ if __name__ == "__main__":
     _dict = ros_msg_to_dict(message)
     print("From dict to sensor_msgs/Image...")
     msg = dict_to_ros_msg("sensor_msgs/Image", _dict)
+    print("Fill ROS Message instance of sensor_msgs/Image...")
+    msg = fill_ros_message(message, _dict)
     print("-------------------------------------------------------")
