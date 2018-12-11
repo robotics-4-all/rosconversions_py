@@ -245,6 +245,7 @@ def ros_msg_to_dict(message):
     """
     return _ros_to_dict(message)
 
+
 def get_message_class(message_type):
     """Return an instance of given message type.
 
@@ -256,30 +257,55 @@ def get_message_class(message_type):
     """
     return roslib.message.get_message_class(message_type)
 
+
 def get_service_class(service_type, reload_on_error=False):
-    """Return an instance of given message type.
+    """
+    Return an instance of given message type.
 
     Exports roslib.message.get_message_class(message_type) under this module.
     http://docs.ros.org/diamondback/api/roslib/html/python/roslib.message-module.html
 
-    Args:
-        - service_type: The service type.
+    @param service_type: The ROS Service type.
+    @type service_type: TODO
     """
     return roslib.message.get_service_class(service_type, reload_on_error=reload_on_error)
 
+
 def dict_to_ros_srv_response(service_type, dictionary):
+    """
+    Convert a dict object to a ROS Service Response (src.Response).
+
+    @param service_type: ROS Service type
+    @type service_type: TODO
+
+    @param dictionary: Dict object to convert to ROS Service Response object
+    @type dictionary: dict
+    """
     srv_obj = _srv_type_to_instance(service_type, response=True)
     return _dict_to_ros(srv_obj, dictionary)
 
+
 def dict_to_ros_srv_request(service_type, dictionary):
+    """
+    Convert a dict object to a ROS Service Request (src.Request).
+
+    @param service_type: ROS Service type
+    @type service_type: TODO
+
+    @param dictionary: Dict object to convert to ROS Service Request object
+    @type dictionary: dict
+    """
     srv_obj = _srv_type_to_instance(service_type, request=True)
     return _dict_to_ros(srv_obj, dictionary)
+
 
 def ros_srv_req_to_dict(srv_req):
     return _ros_to_dict(srv_req)
 
+
 def ros_srv_resp_to_dict(srv_resp):
     return _ros_to_dict(srv_resp)
+
 
 def fill_ros_message(message, dictionary):
     """Take in the ROS Message instance and a Python dictionary and fills.
@@ -297,35 +323,3 @@ def fill_ros_message(message, dictionary):
     """
     return _dict_to_ros(message, dictionary)
 
-
-if __name__ == "__main__":
-    srv_req = dict_to_ros_srv_request('std_srvs/Trigger', {})
-    print(srv_req)
-    srv_resp = dict_to_ros_srv_response('std_srvs/Trigger',
-                                        {'success': True, 'message': 'Do it!'})
-    print(srv_resp)
-    d = ros_srv_req_to_dict(srv_req)
-    print(d)
-    d = ros_srv_resp_to_dict(srv_resp)
-    print(d)
-
-    from sensor_msgs.msg import Image
-    message = Image()
-#
-    print("------------------<sensor_msgs/Image>-------------------")
-    from PIL import Image
-    im = Image.open('Lenna.png')
-    width, height = im.size
-
-    message.height = height
-    message.width = width
-    message.step = width
-    message.data = str(list(im.getdata()))
-
-    print("From sensor_msgs/Image to dict...")
-    _dict = ros_msg_to_dict(message)
-    print("From dict to sensor_msgs/Image...")
-    msg = dict_to_ros_msg("sensor_msgs/Image", _dict)
-    print("Fill ROS Message instance of sensor_msgs/Image...")
-    msg = fill_ros_message(message, _dict)
-    print("-------------------------------------------------------")
