@@ -1,11 +1,13 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 Highly inspired from: https://github.com/uts-magic-lab/rosduct
 """
 
-from __future__ import print_function
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals
+)
 
 import roslib.message
 import rospy
@@ -217,10 +219,15 @@ def _srv_type_to_instance(service_type, request=False, response=False):
     srv_cls = get_service_class(service_type, reload_on_error=False)
     srv = srv_cls()
     if request:
+        # Dig into rospy - here:
+        # https://github.com/ros/ros_comm/blob/melodic-devel/clients/rospy/src/rospy/service.py#L59
         _cls = srv._request_class
     elif response:
+        # Dig into rospy - here:
+        # https://github.com/ros/ros_comm/blob/melodic-devel/clients/rospy/src/rospy/service.py#L60
         _cls = srv._response_class
     _instance = _cls()
+    # print(type(_instance))
     return _instance
 
 def dict_to_ros_msg(message_type, dictionary):
