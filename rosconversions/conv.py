@@ -14,6 +14,11 @@ import rospy
 import re
 import base64
 
+try:
+    unicode
+except:
+    unicode = str
+
 ROS_DATATYPE_MAP = {
     'bool': ['bool'],
     'int': ['int8', 'byte', 'uint8', 'char',
@@ -64,7 +69,7 @@ def _to_ros_binary(_type, _value):
         _value = _value.encode('utf8')
     binary_value_as_string = _value
     if type(_value) in STRING_TYPES:
-        binary_value_as_string = base64.standard_b64decode(_value)
+        binary_value_as_string = base64.standard_b64decode(_value.encode())
     else:
         binary_value_as_string = str(bytearray(_value))
     return binary_value_as_string
@@ -138,7 +143,7 @@ def _from_ros_binary(_value):
     Args:
         _type (str): Data to serialize.
     """
-    _value = base64.standard_b64encode(_value)
+    _value = base64.standard_b64encode(_value.encode())
     return _value
 
 
